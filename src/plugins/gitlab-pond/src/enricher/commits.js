@@ -7,19 +7,17 @@ async function enrich ({ rawDb, enrichedDb, projectId }) {
 
   console.info('INFO >>> gitlab enriching commits for project', projectId)
   await enrichCommitsByProjectId(rawDb, enrichedDb, projectId)
-  console.info('INFO >>> gitlab enriching commits for project done!', projectId, counter)
+  console.info('INFO >>> gitlab enriching commits for project done!', projectId)
 }
 
 async function enrichCommitsByProjectId (rawDb, enrichedDb, projectId) {
   const commitsCollection = await commitsCollector.getCollection(rawDb)
   const cursor = commitsCollection.find({ projectId })
-  let counter = 0
   try {
     while (await cursor.hasNext()) {
       const commit = await cursor.next()
       const enriched = mapResponseToSchema(commit)
       await enrichedDb.GitlabCommit.upsert(enriched)
-      counter++
     }
   } finally {
     await cursor.close()
